@@ -49,10 +49,10 @@ profile:
   store-fake-ip: false              # Fake-IP 模式下建议开启
 
 # 控制面板 API
-external-controller: 0.0.0.0:9999 # 监听地址和端口
-secret: "__CONTROLLER_SECRET__"   # API 密钥
-external-ui: "/etc/mihomo/ui"     # Web UI 静态文件路径
-external-ui-name: zashboard # 指定 UI 名称
+external-controller: 0.0.0.0:9999   # 监听地址和端口
+secret: "__CONTROLLER_SECRET__"     # API 密钥
+external-ui: "/etc/mihomo/ui"       # Web UI 静态文件路径
+external-ui-name: zashboard         # 指定 UI 名称
 external-ui-url: "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip"
 
 geodata-mode: true
