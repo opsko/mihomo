@@ -1,0 +1,57 @@
+name: Deploy mihomo Configuration
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+
+jobs:
+  deploy-mihomo:
+    name: Deploy to Mihomo Server
+    runs-on: home
+
+    steps:
+      - name: Deploy mihomo via SSH
+        uses: appleboy/ssh-action@v1
+        
+        env:
+          SUB_URL_NB: ${{ secrets.MIHOMO_SUB_NB }}
+          SUB_URL_HNEKO: ${{ secrets.MIHOMO_SUB_HNEKO }}
+          CONTROLLER_SECRET: ${{ secrets.MIHOMO_CONTROLLER_SECRET }}
+
+        with:
+          host: ${{ secrets.HOMELAB_HOST }}
+          username: ${{ secrets.HOMELAB_USERNAME }}
+          password: ${{ secrets.HOMELAB_PASSWORD }}
+
+          script: |
+            set -eu
+
+            REPO_DIR="/home/root/mihomo"
+            REPO_URL="https://github.com/opsko/mihomo.git"
+
+            echo "▶️ [Phase 1/3] Preparing repository directory..."
+            mkdir -p "$REPO_DIR"
+            cd "$REPO_DIR"
+            
+            echo "▶️ [Phase 2/3] Updating local repository..."
+            if [ ! -d ".git" ]; then
+              echo "Repository not found. Cloning from $REPO_URL..."
+              git clone "$REPO_URL" .
+            else
+              echo "Repository found. Fetching latest changes and resetting..."
+              git remote set-url origin "$REPO_URL"
+              git fetch origin main
+              git reset --hard origin/main
+            fi
+            echo "✅ Code is up to date."
+
+            echo "▶️ [Phase 3/3] Executing deployment script..."
+            chmod +x deploy_mihomo.sh
+            
+            MIHOMO_SUB_NB="${{ env.SUB_URL_NB }}" \
+            MIHOMO_SUB_HNEKO="${{ env.SUB_URL_HNEKO }}" \
+            MIHOMO_CONTROLLER_SECRET="${{ env.CONTROLLER_SECRET }}" \
+            ./deploy_mihomo.sh

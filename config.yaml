@@ -1,0 +1,378 @@
+# 代理服务提供商
+proxy-providers:
+  NB:
+    url: "__NB_SUB_URL__"
+    type: http
+    interval: 86400
+    health-check:
+      enable: true
+      url: "https://www.gstatic.com/generate_204"
+      interval: 300
+    exclude-filter: "(?i)剩余|流量|套餐|官网|群组|到期|过期|时间|过滤|客户端|建议|ipv6"
+  Hneko:
+    url: "__HNEKO_SUB_URL__"
+    type: http
+    interval: 86400
+    health-check:
+      enable: true
+      url: "https://www.gstatic.com/generate_204"
+      interval: 300
+    exclude-filter: "(?i)剩余|流量|套餐|官网|群组|到期|过期|时间|过滤|客户端|建议|防失联|ipv6"
+
+# 基础代理 (直连是必须的)
+proxies:
+  - name: "🎯 直连"
+    type: direct
+    udp: true
+
+# 全局配置
+mixed-port: 7893                    # HTTP 和 SOCKS5 混合代理端口
+#tproxy-port: 7894                  # 透明代理 TPROXY 端口
+#redir-port: 7892                   # 透明代理端口
+allow-lan: true                     # 允许局域网连接
+bind-address: "*"                   # 监听所有网络接口
+ipv6: false                         # 是否处理 IPv6 流量
+unified-delay: true                 # 在 UI 中显示所有节点的统一延迟信息
+tcp-concurrent: true                # 启用 TCP 并发连接，将会使用 dns 解析出的所有 IP 地址进行连接，使用第一个成功的连接
+log-level: info                     # 日志级别 (silent, error, warning, info, debug)
+find-process-mode: 'strict'         # 查找连接进程 (strict 或 off)
+global-client-fingerprint: chrome   # TLS 指纹伪装
+interface-name: ens18               # mihomo 的流量出站接口
+keep-alive-interval: 15             # TCP Keep Alive 包的间隔，单位为秒
+keep-alive-idle: 15                 # TCP Keep Alive 的最大空闲时间
+disable-keep-alive: false           # 禁用 TCP Keep Alive
+
+mode: rule                          # 运行模式 (Rule, Global, Direct)
+
+profile:
+  store-selected: true              # 记住上次在 UI 中选择的策略组节点
+  store-fake-ip: false              # Fake-IP 模式下建议开启
+
+# 控制面板 API
+external-controller: 0.0.0.0:9999 # 监听地址和端口
+secret: "__CONTROLLER_SECRET__"   # API 密钥
+external-ui: "/etc/mihomo/ui"     # Web UI 静态文件路径
+external-ui-name: zashboard # 指定 UI 名称
+external-ui-url: "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip"
+
+geodata-mode: true
+geo-auto-update: true
+geo-update-interval: 24
+geo-url:
+  geoip: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+  geosite: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
+
+# 流量嗅探
+sniffer:
+  enable: true
+  sniff:
+    HTTP: { ports: [80, 8080-8880], override-destination: true }
+    TLS: { ports: [443, 8443] }
+    QUIC: { ports: [443, 8443] }
+  force-domain:
+    - "+.v2ex.com"
+  skip-domain:
+    - "+.baidu.com"
+    - "Mijia Cloud"
+
+# TUN 设备
+tun:
+  enable: true
+  stack: system                      # TUN 协议栈 (gvisor, mixed, system)
+  dns-hijack:
+    - any:1053                       # 劫持 DNS 端口查询
+  device: tun0                       # TUN 设备名称
+  mtu: 9000
+  strict-route: true                 # 严格路由模式, 可提高 DIRECT 流量效率
+  auto-route: true                   # 自动配置路由表 (核心)
+  auto-redirect: true                # 自动重定向流量到 TUN (配合 auto-route)
+  auto-detect-interface: true        # 自动检测出站网络接口
+
+# DNS 配置
+dns:
+  enable: true
+  ipv6: false
+  listen: 0.0.0.0:1053                # 监听标准 DNS 端口
+  enhanced-mode: redir-host           # redir-host 模式
+  respect-rules: true
+  #enhanced-mode: fake-ip             # fake-ip 模式
+  #fake-ip-range: 198.18.0.1/16       # fakeip 下的 IP 段设置
+  #fake-ip-filter:                    # fakeip 过滤，以下地址不会下发 fakeip 映射用于连接
+  #  - '*.lan'
+  #  - '*.local'
+  #  - 'Mijia Cloud'
+
+  default-nameserver:
+    - 223.5.5.5
+    - 223.6.6.6
+    - 119.29.29.29
+    - 114.114.114.114
+
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+
+  proxy-server-nameserver:
+    - 223.5.5.5
+    - 223.6.6.6
+    - 119.29.29.29
+    - 114.114.114.114
+
+  fallback:
+    - tls://dns.google
+    - tls://one.one.one.one
+    - tls://dns.quad9.net
+
+  # 主要用于解决DNS污染和实现国内外DNS服务器分流
+  fallback-filter:
+    geoip: true                   # 是否启用 geoip 判断
+    geoip-code: CN                # geoip-code 配置的国家的结果会直接采用，否则将采用 fallback结果
+    geosite:                      # geosite 列表的内容被视为已污染，匹配到 geosite 的域名，将只使用 fallback解析
+      - gfw
+    ipcidr:                       # 这些网段的结果会被视为污染，nameserver解析出这些结果时将会采用 fallback的解析结果
+      - 240.0.0.0/4
+    domain:                      # 这些域名被视为已污染，匹配到这些域名，会直接使用 fallback解析
+      - 'google.com'
+      - 'youtube.com'
+      - 'facebook.com'
+      - 'twitter.com'
+      - 'instagram.com'
+      - 'telegram.org'
+      - 'ytimg.com'
+
+# --- 出站策略组 ---
+# 锚点定义 (复用策略选项)
+pr: &pr
+  type: select
+  proxies: [
+    🚀 节点选择,🇺🇸 美国, 🇯🇵 日本, 🇰🇷 韩国, 🇭🇰 香港, 🇸🇬 新加坡, 🇹🇼 台湾, 其他地区,
+    ⚡️ 自动选择, 🌐 全部节点, 🎯 直连
+  ]
+
+proxy-groups:
+  # --- 主要选择器 ---
+  - name: 🚀 节点选择
+    type: select
+    proxies: [
+      🇺🇸 美国, 🇯🇵 日本, 🇰🇷 韩国, 🇭🇰 香港, 🇸🇬 新加坡, 🇹🇼 台湾, 其他地区,
+      ⚡️ 自动选择, 🌐 全部节点, 🎯 直连
+    ]
+
+  # --- 按服务/应用分流 (引用锚点) ---
+  - {name: 📷 YouTube, <<: *pr}
+  - {name: ✈️  Telegram, <<: *pr}
+  - {name: 🤖 OpenAI, <<: *pr}
+  - {name: 🐳 Docker, <<: *pr}
+  - {name: 📒 GitHub, <<: *pr}
+  - {name: 🔍 Google, <<: *pr}
+  - {name: Ⓜ️  Microsoft, <<: *pr}
+  - {name: 🎵 TikTok, <<: *pr}
+  - {name: 🎧 Spotify, <<: *pr}
+  - {name: 🎥 NETFLIX, <<: *pr}
+  - {name: 📺 Bilibili, <<: *pr}
+  - {name: 🎮 Steam, <<: *pr}
+  - {name: 🍎 Apple, <<: *pr}
+  - {name: 🛡️  Cloudflare, <<: *pr}
+  - {name: 🔗 Tailscale, <<: *pr}
+
+  # --- 特殊策略 ---
+  - {name: 🎯 国内流量, <<: *pr}
+  - {name: 🐟 漏网之鱼, <<: *pr}
+
+  # --- 按地区测速 ---
+  - name: 🇺🇸 美国
+    #type: select
+    include-all: true
+    #type: url-test
+    tolerance: 50
+    type: load-balance
+    strategy: round-robin
+    #strategy: consistent-hashing
+    #strategy: sticky-sessions
+    #use: [A, B, C]
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    #timeout: 2000
+    #max-failed-times: 3
+    filter: "(?i)美国|美|US|United States|圣何塞|圣荷西|SJC|San Jose|旧金山|凤凰城"
+  - name: 🇯🇵 日本
+    #type: select
+    include-all: true
+    #type: url-test
+    tolerance: 50
+    type: load-balance
+    strategy: round-robin
+    #strategy: consistent-hashing
+    #strategy: sticky-sessions
+    #use: [A, B, C]
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    #timeout: 2000
+    #max-failed-times: 3
+    filter: "(?i)日本|日|JP|Japan"
+  - name: 🇰🇷 韩国
+    #type: select
+    include-all: true
+    #type: url-test
+    tolerance: 50
+    type: load-balance
+    strategy: round-robin
+    #strategy: consistent-hashing
+    #strategy: sticky-sessions
+    #use: [A, B, C]
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    #timeout: 2000
+    #max-failed-times: 3
+    filter: "(?i)韩国|韩|KR|Korea"
+  - name: 🇭🇰 香港
+    #type: select
+    include-all: true
+    #type: url-test
+    tolerance: 50
+    type: load-balance
+    strategy: round-robin
+    #strategy: consistent-hashing
+    #strategy: sticky-sessions
+    #use: [A, B, C]
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    #timeout: 2000
+    #max-failed-times: 3
+    filter: "(?i)香港|港|HK|Hong Kong"
+  - name: 🇸🇬 新加坡
+    #type: select
+    include-all: true
+    #type: url-test
+    tolerance: 50
+    type: load-balance
+    strategy: round-robin
+    #strategy: consistent-hashing
+    #strategy: sticky-sessions
+    #use: [A, B, C]
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    #timeout: 2000
+    #max-failed-times: 3
+    filter: "(?i)新加坡|新|SG|Singapore"
+  - name: 🇹🇼 台湾
+    #type: select
+    include-all: true
+    #type: url-test
+    tolerance: 50
+    type: load-balance
+    strategy: round-robin
+    #strategy: consistent-hashing
+    #strategy: sticky-sessions
+    #use: [A, B, C]
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    #timeout: 2000
+    #max-failed-times: 3
+    filter: "(?i)台湾|台灣|台|TW|Taiwan"
+  - name: 其他地区
+    #type: select
+    include-all: true
+    type: url-test
+    #use: [A, B, C]
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    #timeout: 2000
+    #max-failed-times: 3
+    exclude-filter: "(?i)(直连|香港|hongkong|hk|台湾|taiwan|tw|日本|japan|jp|美国|纽约|凤凰城|拉斯维加斯|圣何塞|united states|usa|us|新加坡|singapore|sg|韩国|korea|kr)"
+  # --- 全局自动测速 / 手动选择 ---
+  - name: ⚡️ 自动选择
+    type: url-test
+    #use: [A, B]
+    proxies:
+      - "🇺🇸 美国"
+      - "🇯🇵 日本"
+      - "🇰🇷 韩国"
+      - "🇭🇰 香港"
+      - "🇸🇬 新加坡"
+      - "🇹🇼 台湾"
+      - "其他地区"
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    #timeout: 2000
+    #max-failed-times: 3
+    tolerance: 50
+  - name: 🌐 全部节点
+    type: select
+    include-all: true
+    filter: "^((?!(直连)).)*$"
+# --- 规则匹配 ---
+# 1. 强制直连/绕过的 IP 段
+# 2. 特定服务的域名规则
+# 3. 地理位置域名规则
+# 4. GEOIP 地理位置 IP 规则
+# 5. 特定服务的 IP 规则
+# 6. 最终 MATCH 规则
+rules:
+  # --- 强制直连/绕过 (IP) ---
+  #- IP-CIDR,192.168.0.0/16,🎯 直连,no-resolve
+  - RULE-SET,private_ip,🎯 直连,no-resolve
+  - RULE-SET,private_domain,🎯 直连
+
+  # --- 按域名分流 ---
+  - RULE-SET,ai_domain,🤖 OpenAI
+  - RULE-SET,steam_domain,🎮 Steam
+  - RULE-SET,apple_domain,🍎 Apple
+  - RULE-SET,docker_domain,🐳 Docker
+  - RULE-SET,github_domain,📒 GitHub
+  - RULE-SET,tiktok_domain,🎵 TikTok
+  - RULE-SET,spotify_domain,🎧 Spotify
+  - RULE-SET,netflix_domain,🎥 NETFLIX
+  - RULE-SET,youtube_domain,📷 YouTube
+  - RULE-SET,telegram_domain,✈️  Telegram
+  - RULE-SET,bilibili_domain,📺 Bilibili
+  - RULE-SET,microsoft_domain,Ⓜ️  Microsoft
+  - RULE-SET,cloudflare_domain,🛡️  Cloudflare
+  - RULE-SET,tailscale_domain,🔗 Tailscale
+  - RULE-SET,google_domain,🔍 Google
+  - RULE-SET,cn_domain,🎯 国内流量
+  - RULE-SET,geolocation-!cn,🚀 节点选择
+
+  # --- 按IP分流  ---
+  - RULE-SET,netflix_ip,🎥 NETFLIX,no-resolve
+  - RULE-SET,telegram_ip,✈️  Telegram,no-resolve
+  - RULE-SET,cloudflare_ip,🛡️  Cloudflare,no-resolve
+  - RULE-SET,google_ip,🔍 Google,no-resolve
+  - RULE-SET,cn_ip,🎯 国内流量,no-resolve
+
+  # --- 最终匹配 ---
+  - MATCH,🐟 漏网之鱼
+
+# --- 规则集定义 ---
+rule-anchor:
+  ip: &ip {type: http, interval: 86400, behavior: ipcidr, format: mrs}
+  domain: &domain {type: http, interval: 86400, behavior: domain, format: mrs}
+
+rule-providers:
+  # 域名规则
+  private_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.mrs"}
+  cn_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs"}
+  docker_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/docker.mrs"}
+  apple_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple.mrs"}
+  cloudflare_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cloudflare.mrs"}
+  tailscale_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tailscale.mrs"}
+  google_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.mrs"}
+  ai_domain: { <<: *domain, url: "https://raw.github.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs"}
+  github_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/github.mrs"}
+  youtube_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs"}
+  microsoft_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.mrs"}
+  tiktok_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.mrs"}
+  telegram_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs"}
+  netflix_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/netflix.mrs"}
+  spotify_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/spotify.mrs"}
+  bilibili_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bilibili.mrs"}
+  steam_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam.mrs"}
+  geolocation-!cn: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs"}
+
+  # IP规则
+  private_ip: { <<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.mrs"}
+  cn_ip: { <<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs"}
+  google_ip: { <<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/google.mrs"}
+  telegram_ip: { <<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs"}
+  netflix_ip: { <<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/netflix.mrs"}
+  cloudflare_ip: { <<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cloudflare.mrs"}
