@@ -29,7 +29,7 @@ jobs:
           script: |
             set -eu
 
-            REPO_DIR="/home/root/mihomo"
+            REPO_DIR="/root/mihomo"
             REPO_URL="https://github.com/opsko/mihomo.git"
 
             echo "▶️ [Phase 1/3] Preparing repository directory..."
