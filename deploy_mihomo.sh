@@ -27,7 +27,6 @@ check_and_install_dependencies() {
         [jq]="jq"
         [wget]="wget"
         [unzip]="unzip"
-        [git]="git"
         [gunzip]="gzip"
     )
     
