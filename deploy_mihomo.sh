@@ -95,11 +95,11 @@ generate_config() {
     cp "config.yaml" "$TEMP_CONFIG_FILE"
 
     # 对包含特殊字符的 URL 进行转义，以安全地替换
-    local SAFE_SUB_NB=$(echo "${MIHOMO_SUB_NB:-}" | sed 's/[&/\]/\\&/g')
-    local SAFE_SUB_HNEKO=$(echo "${MIHOMO_SUB_HNEKO:-}" | sed 's/[&/\]/\\&/g')
+    local SAFE_SUB_A=$(echo "${MIHOMO_SUB_A:-}" | sed 's/[&/\]/\\&/g')
+    local SAFE_SUB_B=$(echo "${MIHOMO_SUB_B:-}" | sed 's/[&/\]/\\&/g')
 
-    if [ -n "$SAFE_SUB_NB" ]; then sed -i "s|__NB_SUB_URL__|${SAFE_SUB_NB}|g" "$TEMP_CONFIG_FILE"; fi
-    if [ -n "$SAFE_SUB_HNEKO" ]; then sed -i "s|__HNEKO_SUB_URL__|${SAFE_SUB_HNEKO}|g" "$TEMP_CONFIG_FILE"; fi
+    if [ -n "$SAFE_SUB_A" ]; then sed -i "s|__SUB_A_URL__|${SAFE_SUB_A}|g" "$TEMP_CONFIG_FILE"; fi
+    if [ -n "$SAFE_SUB_B" ]; then sed -i "s|__SUB_B_URL__|${SAFE_SUB_B}|g" "$TEMP_CONFIG_FILE"; fi
     if [ -n "${MIHOMO_CONTROLLER_SECRET:-}" ]; then sed -i "s|__CONTROLLER_SECRET__|${MIHOMO_CONTROLLER_SECRET}|g" "$TEMP_CONFIG_FILE"; fi
 
     mv "$TEMP_CONFIG_FILE" "$CONFIG_DIR/config.yaml"

@@ -5,7 +5,7 @@
   ],
   "timezone": "Asia/Shanghai",
   "schedule": [
-    "at 10:00 am",
-    "at 10:00 pm"
+    "at 10:00 am on every day",
+    "at 10:00 pm on every day"
   ]
 }
