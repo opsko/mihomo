@@ -7,7 +7,7 @@ proxy-providers:
     health-check:
       enable: true
       url: "https://www.gstatic.com/generate_204"
-      interval: 300
+      interval: 600
     exclude-filter: "(?i)剩余|流量|套餐|官网|群组|到期|过期|时间|过滤|客户端|建议|ipv6"
   Hneko:
     url: "__HNEKO_SUB_URL__"
@@ -16,7 +16,7 @@ proxy-providers:
     health-check:
       enable: true
       url: "https://www.gstatic.com/generate_204"
-      interval: 300
+      interval: 600
     exclude-filter: "(?i)剩余|流量|套餐|官网|群组|到期|过期|时间|过滤|客户端|建议|防失联|ipv6"
 
 # 基础代理 (直连是必须的)
@@ -184,14 +184,14 @@ proxy-groups:
     #type: select
     include-all: true
     #type: url-test
-    tolerance: 50
+    #tolerance: 50
     type: load-balance
-    strategy: round-robin
-    #strategy: consistent-hashing
+    #strategy: round-robin
+    strategy: consistent-hashing
     #strategy: sticky-sessions
     #use: [A, B, C]
     url: "https://www.gstatic.com/generate_204"
-    interval: 600
+    interval: 180
     #timeout: 2000
     #max-failed-times: 3
     filter: "(?i)美国|美|US|United States|圣何塞|圣荷西|SJC|San Jose|旧金山|凤凰城"
@@ -199,14 +199,14 @@ proxy-groups:
     #type: select
     include-all: true
     #type: url-test
-    tolerance: 50
+    #tolerance: 50
     type: load-balance
-    strategy: round-robin
-    #strategy: consistent-hashing
+    #strategy: round-robin
+    strategy: consistent-hashing
     #strategy: sticky-sessions
     #use: [A, B, C]
     url: "https://www.gstatic.com/generate_204"
-    interval: 600
+    interval: 180
     #timeout: 2000
     #max-failed-times: 3
     filter: "(?i)日本|日|JP|Japan"
@@ -214,14 +214,14 @@ proxy-groups:
     #type: select
     include-all: true
     #type: url-test
-    tolerance: 50
+    #tolerance: 50
     type: load-balance
-    strategy: round-robin
-    #strategy: consistent-hashing
+    #strategy: round-robin
+    strategy: consistent-hashing
     #strategy: sticky-sessions
     #use: [A, B, C]
     url: "https://www.gstatic.com/generate_204"
-    interval: 600
+    interval: 180
     #timeout: 2000
     #max-failed-times: 3
     filter: "(?i)韩国|韩|KR|Korea"
@@ -229,14 +229,14 @@ proxy-groups:
     #type: select
     include-all: true
     #type: url-test
-    tolerance: 50
+    #tolerance: 50
     type: load-balance
-    strategy: round-robin
-    #strategy: consistent-hashing
+    #strategy: round-robin
+    strategy: consistent-hashing
     #strategy: sticky-sessions
     #use: [A, B, C]
     url: "https://www.gstatic.com/generate_204"
-    interval: 600
+    interval: 180
     #timeout: 2000
     #max-failed-times: 3
     filter: "(?i)香港|港|HK|Hong Kong"
@@ -244,14 +244,14 @@ proxy-groups:
     #type: select
     include-all: true
     #type: url-test
-    tolerance: 50
+    #tolerance: 50
     type: load-balance
-    strategy: round-robin
-    #strategy: consistent-hashing
+    #strategy: round-robin
+    strategy: consistent-hashing
     #strategy: sticky-sessions
     #use: [A, B, C]
     url: "https://www.gstatic.com/generate_204"
-    interval: 600
+    interval: 180
     #timeout: 2000
     #max-failed-times: 3
     filter: "(?i)新加坡|新|SG|Singapore"
@@ -259,14 +259,14 @@ proxy-groups:
     #type: select
     include-all: true
     #type: url-test
-    tolerance: 50
+    #tolerance: 50
     type: load-balance
-    strategy: round-robin
-    #strategy: consistent-hashing
+    #strategy: round-robin
+    strategy: consistent-hashing
     #strategy: sticky-sessions
     #use: [A, B, C]
     url: "https://www.gstatic.com/generate_204"
-    interval: 600
+    interval: 180
     #timeout: 2000
     #max-failed-times: 3
     filter: "(?i)台湾|台灣|台|TW|Taiwan"
@@ -276,7 +276,7 @@ proxy-groups:
     type: url-test
     #use: [A, B, C]
     url: "https://www.gstatic.com/generate_204"
-    interval: 600
+    interval: 180
     #timeout: 2000
     #max-failed-times: 3
     exclude-filter: "(?i)(直连|香港|hongkong|hk|台湾|taiwan|tw|日本|japan|jp|美国|纽约|凤凰城|拉斯维加斯|圣何塞|united states|usa|us|新加坡|singapore|sg|韩国|korea|kr)"
@@ -293,7 +293,7 @@ proxy-groups:
       - "🇹🇼 台湾"
       - "其他地区"
     url: "https://www.gstatic.com/generate_204"
-    interval: 600
+    interval: 180
     #timeout: 2000
     #max-failed-times: 3
     tolerance: 50
