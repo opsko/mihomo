@@ -3,9 +3,5 @@
   "extends": [
     "config:base"
   ],
-  "timezone": "Asia/Shanghai",
-  "schedule": [
-    "at 10:00 am on every day",
-    "at 10:00 pm on every day"
-  ]
+  "timezone": "Asia/Shanghai"
 }
